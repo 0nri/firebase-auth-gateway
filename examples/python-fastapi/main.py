@@ -72,7 +72,7 @@ async def home(
 @app.get("/protected")
 async def protected_route(
     request: Request,
-    user: UserData = Depends(auth.require_user())
+    user: UserData = Depends(auth.get_current_user())
 ):
     """A protected route that requires authentication."""
     return templates.TemplateResponse(
@@ -84,7 +84,7 @@ async def protected_route(
     )
 
 @app.get("/profile")
-async def profile(user: UserData = Depends(auth.require_user())):
+async def profile(user: UserData = Depends(auth.get_current_user())):
     """API endpoint that returns user profile as JSON."""
     return {
         "uid": user.uid,

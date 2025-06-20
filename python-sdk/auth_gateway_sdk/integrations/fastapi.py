@@ -163,6 +163,15 @@ class AuthGatewayFastAPI:
         
         return get_current_user
     
+    def get_current_user(self) -> Callable:
+        """
+        Get dependency that requires user authentication.
+        
+        Returns:
+            Dependency function that returns UserData or raises HTTPException
+        """
+        return self._current_user_required
+    
     def get_current_user_optional(self) -> Callable:
         """
         Get dependency for optional user authentication.
@@ -171,15 +180,6 @@ class AuthGatewayFastAPI:
             Dependency function that returns UserData or None
         """
         return self._current_user_optional
-    
-    def require_user(self) -> Callable:
-        """
-        Get dependency that requires user authentication.
-        
-        Returns:
-            Dependency function that returns UserData or raises HTTPException
-        """
-        return self._current_user_required
     
     async def generate_login_url(self, redirect_uri: Optional[str] = None) -> LoginResponse:
         """Generate login URL."""
@@ -211,19 +211,23 @@ class AuthGatewayFastAPI:
                 uri = redirect_uri or login_redirect_uri
                 response = await self.generate_login_url(uri)
                 return RedirectResponse(url=response.url)
-            except AuthGatewayException as e:
-                logger.error(f"Login URL generation failed: {e.message}")
-                raise HTTPException(status_code=500, detail="Failed to initiate login")
+            except Exception as e:
+                logger.error(f"Login URL generation failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to initiate login: {str(e)}")
         
         @router.get("/logout")
         async def logout():
             """Logout by clearing cookies."""
-            response = RedirectResponse(url="/")
-            response.delete_cookie("access_token")
-            return response
+            try:
+                response = RedirectResponse(url="/")
+                response.delete_cookie("access_token")
+                return response
+            except Exception as e:
+                logger.error(f"Logout failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
         
         @router.get("/me")
-        async def get_current_user_info(user: UserData = Depends(self.require_user())):
+        async def get_current_user_info(user: UserData = Depends(self.get_current_user())):
             """Get current user information."""
             return user
         

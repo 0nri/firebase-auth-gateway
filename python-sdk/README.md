@@ -90,7 +90,7 @@ async def public_route():
     return {"message": "This is a public route"}
 
 @app.get("/profile")
-async def protected_route(user: UserData = Depends(auth.require_user())):
+async def protected_route(user: UserData = Depends(auth.get_current_user())):
     return {"message": f"Hello {user.email}!", "user": user}
 
 @app.get("/optional-auth")
