@@ -14,7 +14,7 @@ import asyncio
 
 from ..client import AuthGatewayClient
 from ..config import AuthGatewayConfig
-from ..models import UserData, LoginResponse
+from ..models import UserData, LoginResponse, LoginRequest
 from ..exceptions import (
     AuthGatewayException,
     AuthenticationError,
@@ -211,8 +211,19 @@ class AuthGatewayFastAPI:
         # Store reference to avoid closure issues
         client = self.client
         
-        # Login route
-        async def login_handler(redirect_uri: Optional[str] = None):
+        # Login route - POST to match backend API
+        async def login_handler_post(request: LoginRequest):
+            """Generate login URL via backend API (JSON response)."""
+            try:
+                uri = request.redirect_uri or login_redirect_uri
+                response = await client.generate_login_url(uri)
+                return response  # Return JSON response
+            except Exception as e:
+                logger.error(f"Login URL generation failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to initiate login: {str(e)}")
+        
+        # Login route - GET for browser redirects
+        async def login_handler_get(redirect_uri: Optional[str] = None):
             """Initiate login by redirecting to Google OAuth."""
             try:
                 uri = redirect_uri or login_redirect_uri
@@ -247,7 +258,8 @@ class AuthGatewayFastAPI:
             }
         
         # Add routes to router
-        router.add_api_route("/login", login_handler, methods=["GET"], summary="Initiate login")
+        router.add_api_route("/login", login_handler_post, methods=["POST"], summary="Generate login URL (API)")
+        router.add_api_route("/login", login_handler_get, methods=["GET"], summary="Initiate login (Browser)")
         router.add_api_route("/logout", logout_handler, methods=["GET"], summary="Logout")
         router.add_api_route("/me", me_handler, methods=["GET"], summary="Get current user")
         router.add_api_route("/status", status_handler, methods=["GET"], summary="Check auth status")
