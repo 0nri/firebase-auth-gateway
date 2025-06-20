@@ -204,19 +204,26 @@ class AuthGatewayFastAPI:
         """
         router = APIRouter(prefix=prefix, tags=tags or ["authentication"])
         
-        @router.get("/login")
-        async def login(redirect_uri: Optional[str] = None):
+        # Create dependencies outside of route handlers to avoid capturing issues
+        auth_required = self.get_current_user()
+        auth_optional = self.get_current_user_optional()
+        
+        # Store reference to avoid closure issues
+        client = self.client
+        
+        # Login route
+        async def login_handler(redirect_uri: Optional[str] = None):
             """Initiate login by redirecting to Google OAuth."""
             try:
                 uri = redirect_uri or login_redirect_uri
-                response = await self.generate_login_url(uri)
+                response = await client.generate_login_url(uri)
                 return RedirectResponse(url=response.url)
             except Exception as e:
                 logger.error(f"Login URL generation failed: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Failed to initiate login: {str(e)}")
         
-        @router.get("/logout")
-        async def logout():
+        # Logout route
+        async def logout_handler():
             """Logout by clearing cookies."""
             try:
                 response = RedirectResponse(url="/")
@@ -226,18 +233,24 @@ class AuthGatewayFastAPI:
                 logger.error(f"Logout failed: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
         
-        @router.get("/me")
-        async def get_current_user_info(user: UserData = Depends(self.get_current_user())):
+        # Me route
+        async def me_handler(user: UserData = Depends(auth_required)):
             """Get current user information."""
             return user
         
-        @router.get("/status")
-        async def auth_status(user: Optional[UserData] = Depends(self.get_current_user_optional())):
+        # Status route
+        async def status_handler(user: Optional[UserData] = Depends(auth_optional)):
             """Check authentication status."""
             return {
                 "authenticated": user is not None,
                 "user": user
             }
+        
+        # Add routes to router
+        router.add_api_route("/login", login_handler, methods=["GET"], summary="Initiate login")
+        router.add_api_route("/logout", logout_handler, methods=["GET"], summary="Logout")
+        router.add_api_route("/me", me_handler, methods=["GET"], summary="Get current user")
+        router.add_api_route("/status", status_handler, methods=["GET"], summary="Check auth status")
         
         return router
     
