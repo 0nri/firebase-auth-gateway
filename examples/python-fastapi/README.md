@@ -27,7 +27,7 @@ This example demonstrates how to integrate the Auth Gateway Python SDK with a Fa
    pip install -e ../../python-sdk[fastapi]
    
    # For production (from git)
-   pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk[fastapi]"
+   pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk&egg=auth-gateway-sdk[fastapi]"
    ```
 
 2. **Install other dependencies:**

@@ -8,13 +8,13 @@ Install directly from git repository:
 
 ```bash
 # Install latest version
-pip install git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk
+pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk&egg=auth-gateway-sdk"
 
 # Install specific version
-pip install git+https://github.com/0nri/firebase-auth-gateway.git@v1.0.0#subdirectory=python-sdk
+pip install "git+https://github.com/0nri/firebase-auth-gateway.git@v1.0.0#subdirectory=python-sdk&egg=auth-gateway-sdk"
 
 # Install with FastAPI integration
-pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk[fastapi]"
+pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk&egg=auth-gateway-sdk[fastapi]"
 ```
 
 ## Quick Start

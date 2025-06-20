@@ -20,7 +20,7 @@ function show_help {
   echo "  -h, --help            Show this help message"
   echo ""
   echo "Environment variables must be provided in a .env.deploy file"
-  echo "See .env.example for required variables"
+  echo "See .env.deploy.example for required variables"
   exit 1
 }
 
@@ -63,7 +63,7 @@ fi
 if [ ! -f .env.deploy ]; then
   echo "Error: .env.deploy file not found"
   echo "Create a .env.deploy file with your environment variables"
-  echo "See .env.example for required variables"
+  echo "See .env.deploy.example for required variables"
   exit 1
 fi
 
@@ -75,20 +75,33 @@ REQUIRED_VARS=(
   "FIREBASE_PROJECT_ID"
   "FIREBASE_API_KEY"
   "FIREBASE_AUTH_DOMAIN"
-  "FIREBASE_APP_ID"
   "GOOGLE_CLIENT_ID"
   "GOOGLE_CLIENT_SECRET"
-  "ALLOWED_EMAIL_DOMAIN_REGEX"
-  "CORS_ALLOWED_ORIGINS"
-  "GATEWAY_PUBLIC_URL" # Added: Public URL of the deployed gateway service
+  "GATEWAY_PUBLIC_URL"
 )
 
+OPTIONAL_VARS=(
+  "FIREBASE_APP_ID"
+  "AUTH_REDIRECT_URL"
+  "ALLOWED_EMAIL_DOMAIN_REGEX"
+  "CORS_ALLOWED_ORIGINS"
+  "LOG_LEVEL"
+  "ENVIRONMENT"
+)
+
+# Check required variables
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo "Error: $var is required in .env.deploy"
     exit 1
   fi
 done
+
+# Set defaults for optional variables
+ALLOWED_EMAIL_DOMAIN_REGEX=${ALLOWED_EMAIL_DOMAIN_REGEX:-".*"}
+CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-""}
+LOG_LEVEL=${LOG_LEVEL:-"INFO"}
+ENVIRONMENT=${ENVIRONMENT:-"production"}
 
 echo "Deploying Auth Gateway backend to Google Cloud Run..."
 echo "Service name: $SERVICE_NAME"
@@ -114,12 +127,22 @@ cat > "$ENV_YAML_FILE" << EOF
 FIREBASE_PROJECT_ID: $FIREBASE_PROJECT_ID
 FIREBASE_API_KEY: $FIREBASE_API_KEY
 FIREBASE_AUTH_DOMAIN: $FIREBASE_AUTH_DOMAIN
-FIREBASE_APP_ID: $FIREBASE_APP_ID
 GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
 ALLOWED_EMAIL_DOMAIN_REGEX: $ALLOWED_EMAIL_DOMAIN_REGEX
 CORS_ALLOWED_ORIGINS: $CORS_ALLOWED_ORIGINS
 GATEWAY_PUBLIC_URL: $GATEWAY_PUBLIC_URL
+LOG_LEVEL: $LOG_LEVEL
+ENVIRONMENT: $ENVIRONMENT
 EOF
+
+# Add optional variables if they are set
+if [ -n "$FIREBASE_APP_ID" ]; then
+  echo "FIREBASE_APP_ID: $FIREBASE_APP_ID" >> "$ENV_YAML_FILE"
+fi
+
+if [ -n "$AUTH_REDIRECT_URL" ]; then
+  echo "AUTH_REDIRECT_URL: $AUTH_REDIRECT_URL" >> "$ENV_YAML_FILE"
+fi
 
 # Build and deploy to Cloud Run
 echo "Deploying to Cloud Run..."

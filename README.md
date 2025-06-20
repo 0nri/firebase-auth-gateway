@@ -180,7 +180,7 @@ The Auth Gateway provides two ways to integrate with Python applications:
 
 ```bash
 # Install Python SDK with FastAPI integration
-pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk[fastapi]"
+pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk&egg=auth-gateway-sdk[fastapi]"
 ```
 
 #### Simple Integration
@@ -703,5 +703,5 @@ Publish using git-based distribution:
 
 ```bash
 # Python SDK is distributed via git subdirectory
-pip install git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk
+pip install "git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk&egg=auth-gateway-sdk"
 ```
