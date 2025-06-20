@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Gateway Vanilla JS Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card {
+      width: 100%;
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #f9f9f9;
+    }
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .profile-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .button {
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .button:hover {
+      background-color: #3367d6;
+    }
+    .error {
+      color: #d32f2f;
+      margin: 10px 0;
+    }
+    .loading {
+      color: #888;
+      margin: 10px 0;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Auth Gateway Vanilla JS Example</h1>
+    
+    <div class="card">
+      <p>This example demonstrates how to use the Auth Gateway SDK with vanilla JavaScript.</p>
+      <div id="loading" class="loading">Loading authentication state...</div>
+      <div id="error" class="error hidden"></div>
+    </div>
+    
+    <div id="login-card" class="card hidden">
+      <h2>Please Sign In</h2>
+      <p>Sign in with your Google account to access the application.</p>
+      <button id="login-button" class="button">Sign In with Google</button>
+    </div>
+    
+    <div id="profile-card" class="card hidden">
+      <h2>Profile</h2>
+      <div class="profile">
+        <img id="profile-image" class="profile-image" src="" alt="Profile">
+        <h3 id="profile-name"></h3>
+        <p id="profile-email"></p>
+        <p id="profile-uid"></p>
+      </div>
+      <button id="logout-button" class="button">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Import the Auth Gateway SDK -->
+  <!-- In a real application, you would import the published npm package -->
+  <!-- For this example, we'll use a script that imports the local SDK -->
+  <script type="module">
+    // Import the VanillaAuthClient from the SDK
+    // Note: In a real application, you would import from the npm package
+    // import { VanillaAuthClient } from 'auth-gateway-sdk';
+    import { VanillaAuthClient } from '../../frontend/dist/index.esm.js';
+
+    // Elements
+    const loadingElement = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
+    const loginCardElement = document.getElementById('login-card');
+    const profileCardElement = document.getElementById('profile-card');
+    const loginButtonElement = document.getElementById('login-button');
+    const logoutButtonElement = document.getElementById('logout-button');
+    const profileImageElement = document.getElementById('profile-image');
+    const profileNameElement = document.getElementById('profile-name');
+    const profileEmailElement = document.getElementById('profile-email');
+    const profileUidElement = document.getElementById('profile-uid');
+
+    // Auth Gateway backend URL
+    // Replace with your deployed backend URL or use localhost for development
+    const authBackendUrl = "http://localhost:8000";
+
+    // Initialize the Auth Gateway client
+    const authClient = new VanillaAuthClient({
+      authBackendUrl
+    });
+
+    // Show error message
+    function showError(message) {
+      errorElement.textContent = message;
+      errorElement.classList.remove('hidden');
+    }
+
+    // Hide error message
+    function hideError() {
+      errorElement.classList.add('hidden');
+    }
+
+    // Show loading state
+    function showLoading() {
+      loadingElement.classList.remove('hidden');
+    }
+
+    // Hide loading state
+    function hideLoading() {
+      loadingElement.classList.add('hidden');
+    }
+
+    // Update UI based on authentication state
+    function updateUI(user) {
+      if (user) {
+        // User is authenticated
+        loginCardElement.classList.add('hidden');
+        profileCardElement.classList.remove('hidden');
+        
+        // Update profile information
+        profileNameElement.textContent = user.display_name || 'User';
+        profileEmailElement.textContent = user.email;
+        profileUidElement.textContent = `User ID: ${user.uid}`;
+        
+        // Update profile image if available
+        if (user.photo_url) {
+          profileImageElement.src = user.photo_url;
+          profileImageElement.alt = user.display_name || 'User';
+        } else {
+          // Use placeholder image if no photo URL
+          profileImageElement.src = 'https://via.placeholder.com/100';
+          profileImageElement.alt = 'No profile image';
+        }
+      } else {
+        // User is not authenticated
+        loginCardElement.classList.remove('hidden');
+        profileCardElement.classList.add('hidden');
+      }
+    }
+
+    // Register auth state change listener
+    authClient.onAuthStateChanged((user) => {
+      console.log('Auth state changed:', user);
+      updateUI(user);
+    });
+
+    // Register loading state change listener
+    authClient.onLoadingStateChanged((isLoading) => {
+      console.log('Loading state changed:', isLoading);
+      if (isLoading) {
+        showLoading();
+      } else {
+        hideLoading();
+      }
+    });
+
+    // Register error listener
+    authClient.onError((error) => {
+      console.error('Auth error:', error);
+      showError(error);
+    });
+
+    // Login button click handler
+    loginButtonElement.addEventListener('click', async () => {
+      hideError();
+      try {
+        await authClient.login();
+      } catch (error) {
+        showError(`Login failed: ${error.message}`);
+      }
+    });
+
+    // Logout button click handler
+    logoutButtonElement.addEventListener('click', async () => {
+      hideError();
+      try {
+        await authClient.logout();
+      } catch (error) {
+        showError(`Logout failed: ${error.message}`);
+      }
+    });
+  </script>
+</body>
+</html>

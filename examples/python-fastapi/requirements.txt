@@ -1,0 +1,12 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+jinja2>=3.1.2
+python-multipart>=0.0.6
+
+# Auth Gateway Python SDK
+# Install from local development (for this example)
+# In production, you would use:
+# git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk[fastapi]
+
+# For this example, you can install with:
+# pip install -e ../../python-sdk[fastapi]

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Gateway FastAPI Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        .user-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+        }
+        .user-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-header {
+            display: flex;
+            align-items: center;
+        }
+        .protected-link {
+            margin-top: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Auth Gateway FastAPI Example</h1>
+            {% if user %}
+                <a href="/logout" class="btn">Sign Out</a>
+            {% else %}
+                <a href="/login" class="btn">Sign In with Google</a>
+            {% endif %}
+        </div>
+
+        {% if user %}
+            <div class="user-info">
+                <div class="user-header">
+                    {% if user.photo_url %}
+                        <img src="{{ user.photo_url }}" alt="Profile Photo" class="user-photo">
+                    {% endif %}
+                    <h2>Welcome, {{ user.display_name or user.email }}!</h2>
+                </div>
+                <p><strong>User ID:</strong> {{ user.uid }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+            </div>
+            <a href="/protected" class="protected-link">Access Protected Route</a>
+        {% else %}
+            <p>You are not signed in. Click the "Sign In with Google" button to authenticate.</p>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <h2>About This Example</h2>
+        <p>This example demonstrates how to integrate the Auth Gateway with a FastAPI application.</p>
+        <p>Key features:</p>
+        <ul>
+            <li>Google Sign-In via Auth Gateway</li>
+            <li>Token verification and validation</li>
+            <li>Protected routes with authentication</li>
+            <li>Secure cookie-based session management</li>
+        </ul>
+    </div>
+</body>
+</html>

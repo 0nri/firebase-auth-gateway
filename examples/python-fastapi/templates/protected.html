@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Route - Auth Gateway FastAPI Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        .user-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+        }
+        .user-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-header {
+            display: flex;
+            align-items: center;
+        }
+        .protected-content {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+        }
+        .nav-links {
+            margin-top: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            color: #4285f4;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Protected Route</h1>
+            <a href="/logout" class="btn">Sign Out</a>
+        </div>
+
+        <div class="protected-content">
+            <h2>🔒 Authenticated Access Successful</h2>
+            <p>You have successfully accessed a protected route that requires authentication.</p>
+            <p>This demonstrates how the Auth Gateway can be used to protect routes in your application.</p>
+        </div>
+
+        <div class="user-info">
+            <div class="user-header">
+                {% if user.photo_url %}
+                    <img src="{{ user.photo_url }}" alt="Profile Photo" class="user-photo">
+                {% endif %}
+                <h2>User Information</h2>
+            </div>
+            <p><strong>User ID:</strong> {{ user.uid }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Display Name:</strong> {{ user.display_name or "Not provided" }}</p>
+        </div>
+
+        <div class="nav-links">
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>How It Works</h2>
+        <p>This protected route uses the <code>get_current_user</code> dependency to verify that the user is authenticated:</p>
+        <pre><code>@app.get("/protected")
+async def protected_route(request: Request, user: User = Depends(get_current_user)):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    return templates.TemplateResponse("protected.html", {"request": request, "user": user})
+</code></pre>
+        <p>The token is verified with the Auth Gateway backend service, ensuring that only authenticated users can access this route.</p>
+    </div>
+</body>
+</html>
