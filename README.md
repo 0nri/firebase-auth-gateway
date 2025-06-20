@@ -705,5 +705,3 @@ Publish using git-based distribution:
 # Python SDK is distributed via git subdirectory
 pip install git+https://github.com/0nri/firebase-auth-gateway.git#subdirectory=python-sdk
 ```
-
-For more deployment options, see the [Migration Guide](MIGRATION.md).
